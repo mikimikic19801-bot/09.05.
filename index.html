@@ -297,7 +297,7 @@
                     <div class="bg-neutral-900 p-2.5 rounded-lg text-brand-orange self-start"><i class="fa-brands fa-chrome text-lg"></i></div>
                     <div>
                         <h4 class="text-xs font-bold uppercase text-white mb-0.5">Računar (Chrome / Edge / Opera)</h4>
-                        <p class="text-xs text-neutral-400 leading-relaxed">U vrhu pretraživača (desno u adresnoj traci) klikni na ikonicu kompjutera sa strelicom nadole <b class="text-brand-orange">"Install App"</b> ili klikni na tri tačkice pa na "Instaliraj aplikaciju".</p>
+                        <p class="text-xs text-neutral-400 leading-relaxed">U vrhu pretraživača (desno u adresnoj traci) klikni na ikonicu kompjutera sa strelicom nadole <b class="text-brand-orange">"Install App"</b> ili na tri tačkice pa na "Instaliraj aplikaciju".</p>
                     </div>
                 </div>
                 <div class="flex gap-3 border-t border-neutral-800/60 pt-4">
@@ -311,7 +311,7 @@
                     <div class="bg-neutral-900 p-2.5 rounded-lg text-brand-orange self-start"><i class="fa-brands fa-apple text-lg"></i></div>
                     <div>
                         <h4 class="text-xs font-bold uppercase text-white mb-0.5">iPhone / iPad (Safari)</h4>
-                        <p class="text-xs text-neutral-400 leading-relaxed">Otvorite sajt isključivo u pretraživaču <b class="text-brand-orange">Safari</b>. Kliknite na dugme <b class="text-brand-orange">"Podeli"</b> (Share - ikonica sa kvadratićem i strelicom na gore), skrolujte nadole i kliknite na <b class="text-brand-orange">"Dodaj na početni ekran"</b>.</p>
+                        <p class="text-xs text-neutral-400 leading-relaxed">Otvorite sajt isključivo u pretraživaču <b class="text-brand-orange">Safari</b>. Kliknite na dugme <b class="text-brand-orange">"Podeli"</b> (Share), skrolujte nadole i izaberite <b class="text-brand-orange">"Dodaj na početni ekran"</b>.</p>
                     </div>
                 </div>
             </div>
@@ -356,20 +356,29 @@
             relManifest.setAttribute('href', manifestURL);
             document.head.appendChild(relManifest);
 
-            // Registracija Service Workera za PWA instalaciju (simulirano/lokalno)
+            // Registracija virtuelnog Service Workera u memoriji (bez sw.js fajla!)
             if ('serviceWorker' in navigator) {
-                // Generišemo Service Worker iz Bloba koji samo vraća zahteve, što zadovoljava PWA standarde
-                const swCode = `
-                    self.addEventListener('install', (e) => self.skipWaiting());
-                    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-                    self.addEventListener('fetch', (e) => {
-                        // Pass-through bez keširanja da bi se uvek vukla najnovija verzija
-                        e.respondWith(fetch(e.request).catch(() => new Response("Nema interneta.")));
-                    });
-                `;
-                const swBlob = new Blob([swCode], {type: 'application/javascript'});
-                const swURL = URL.createObjectURL(swBlob);
-                navigator.serviceWorker.register(swURL).catch(err => console.log('SW neuspešan:', err));
+                window.addEventListener('load', () => {
+                    const swCode = `
+                        const CACHE_NAME = 'kosarka-analize-v2';
+                        self.addEventListener('install', (e) => {
+                            self.skipWaiting();
+                        });
+                        self.addEventListener('activate', (e) => {
+                            e.waitUntil(clients.claim());
+                        });
+                        self.addEventListener('fetch', (e) => {
+                            // Jednostavan proksi
+                            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                        });
+                    `;
+                    const swBlob = new Blob([swCode], {type: 'text/javascript'});
+                    const swUrl = URL.createObjectURL(swBlob);
+                    
+                    navigator.serviceWorker.register(swUrl)
+                    .then(reg => console.log('Virtuelni SW uspešno povezan!'))
+                    .catch(err => console.log('Virtuelni SW preskočen (standardna prečica aktivna).'));
+                });
             }
         })();
 
