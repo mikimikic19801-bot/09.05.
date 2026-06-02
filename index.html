@@ -2,638 +2,722 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sport Radar Pro</title>
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=96&id=u060U6K9U5L0&format=png&color=00e676">
-    <meta name="theme-color" content="#121212">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Košarkaški analizator i kalkulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            black: '#080707',
+                            dark: '#12100e',
+                            card: '#1a1714',
+                            orange: '#f97316',
+                            amber: '#d97706',
+                            accent: '#ff781f'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #ffffff;
-            --accent-color: #00e676;
-            --danger-color: #ff1744;
-            --warning-color: #ffea00;
-            --gray-text: #aaaaaa;
+        /* Sakrivanje scrollbar-a za bolji mobilni izgled */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        * {
-            box-sizing: border-box;
+        ::-webkit-scrollbar-track {
+            background: #12100e;
         }
-
-        body {
-            font-family: 'Google Sans', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 10px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        header {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            border-bottom: 2px solid var(--card-bg);
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-        }
-
-        @media (min-width: 600px) {
-            header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 20px;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            gap: 10px;
-        }
-
-        @media (min-width: 600px) {
-            .header-controls {
-                width: auto;
-                justify-content: flex-end;
-            }
-        }
-
-        .api-tracker {
-            background-color: var(--card-bg);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            border: 1px solid #333;
-            flex-grow: 1;
-        }
-
-        @media (min-width: 600px) {
-            .api-tracker {
-                flex-grow: 0;
-            }
-        }
-
-        .api-status {
-            margin: 2px 0;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .status-ok { color: var(--accent-color); font-weight: bold; }
-        .status-count { color: var(--warning-color); font-weight: bold; }
-
-        .section-title {
-            font-size: 14px;
-            text-transform: uppercase;
-            color: var(--gray-text);
-            margin: 15px 0 10px 0;
-            border-left: 3px solid var(--accent-color);
-            padding-left: 8px;
-            font-weight: bold;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        @media (min-width: 768px) {
-            .grid-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .grid-container {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .match-card {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 12px;
-            border: 1px solid #2e2e2e;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .match-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--gray-text);
-            margin-bottom: 8px;
-        }
-
-        .match-teams {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .team-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .team-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            max-width: 80%;
-        }
-
-        .team-logo {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-        }
-
-        .team-name {
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .score {
-            font-size: 16px;
-            font-weight: 900;
-            color: var(--accent-color);
-        }
-
-        .odds-badge {
-            background-color: #2a2a2a;
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 11px;
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            border-left: 3px solid var(--warning-color);
-        }
-
-        .card-red {
-            background-color: var(--danger-color);
-            color: white;
-            font-size: 9px;
-            padding: 1px 4px;
+        ::-webkit-scrollbar-thumb {
+            background: #d97706;
             border-radius: 3px;
-            margin-left: 5px;
-            font-weight: bold;
         }
-
-        .alert-box {
-            background-color: rgba(255, 23, 68, 0.15);
-            border: 1px solid var(--danger-color);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        /* Sekcija za presek stanja u 12h i 17h */
-        .presec-container {
-            background-color: #172b1a;
-            border: 1px solid var(--accent-color);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .presec-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .presec-list {
-            font-size: 12px;
-            margin: 0;
-            padding-left: 15px;
-            color: #e0e0e0;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f97316;
         }
     </style>
 </head>
-<body>
+<body class="bg-brand-black text-neutral-100 min-h-screen font-sans flex flex-col justify-between">
 
-    <header>
-        <div>
-            <h1>Sport Radar Pro</h1>
-            <div style="font-size: 10px; color: var(--gray-text)">Skeniranje na 3 min | Favoriti i Crveni Kartoni</div>
-        </div>
-        <div class="header-controls">
-            <div class="api-tracker">
-                <div class="api-status">
-                    <span>Skeniranje (Uživo):</span>
-                    <span id="fd-rate" class="status-ok">AKTIVNO</span>
+    <!-- Zaglavlje -->
+    <header class="bg-brand-dark/95 border-b border-neutral-800 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-br from-brand-orange to-brand-amber p-2 rounded-xl text-neutral-950">
+                    <i class="fa-solid fa-basketball text-2xl animate-bounce"></i>
                 </div>
-                <div class="api-status">
-                    <span>The Odds API:</span>
-                    <span id="odds-count" class="status-count">500 / 500 preostalo</span>
+                <div>
+                    <h1 class="text-xl font-black tracking-wide uppercase flex items-center gap-2">
+                        Košarkaški analizator <span class="text-xs bg-brand-orange text-neutral-950 font-bold px-1.5 py-0.5 rounded">PRO</span>
+                    </h1>
+                    <p class="text-xs text-neutral-400">Pametni kalkulator & AI PWA aplikacija</p>
                 </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="otvoriInstalaciju()" class="bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-xs text-neutral-300 px-3 py-2 rounded-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button text-brand-orange"></i> Instaliraj App 📱
+                </button>
+                <button onclick="otvoriPostavke()" class="bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-bold text-xs px-3 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-brand-orange/10">
+                    <i class="fa-solid fa-gears text-sm"></i> Podešavanja ⚙️
+                </button>
             </div>
         </div>
     </header>
 
-    <div id="presec-box" class="presec-container">
-        <div class="presec-title" id="presec-time-title">Presek stanja</div>
-        <ul class="presec-list" id="presec-items"></ul>
+    <!-- Glavni sadržaj -->
+    <main class="max-w-7xl mx-auto p-4 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Leva kolona: Unos podataka -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+            <div class="bg-brand-card border border-neutral-800/80 rounded-2xl p-5 shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-brand-orange">
+                        <i class="fa-solid fa-keyboard text-brand-orange"></i> Unos Podataka i Kvota
+                    </h2>
+                    <button onclick="ucitajPrimerMeca()" class="text-xs bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-brand-orange font-bold py-1.5 px-3 rounded-lg transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-bolt"></i> Primer Meča
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs text-neutral-400 uppercase font-semibold mb-1">Kvota na Domacina (1)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-2.5 text-neutral-500 text-xs">1</span>
+                            <input type="number" id="kvota1" step="0.01" min="1.01" placeholder="npr. 1.85" class="w-full bg-brand-dark/80 border border-neutral-800 focus:border-brand-orange rounded-xl pl-8 pr-3 py-2 text-sm text-white font-bold outline-none transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-neutral-400 uppercase font-semibold mb-1">Kvota na Gosta (2)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-2.5 text-neutral-500 text-xs">2</span>
+                            <input type="number" id="kvota2" step="0.01" min="1.01" placeholder="npr. 1.95" class="w-full bg-brand-dark/80 border border-neutral-800 focus:border-brand-orange rounded-xl pl-8 pr-3 py-2 text-sm text-white font-bold outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-xs text-neutral-400 uppercase font-semibold mb-1.5">Kopirani tekst sa sajta (Flashscore, Sofascore, Vesti, Forma...)</label>
+                    <textarea id="rawText" rows="10" placeholder="Kopiraj i zalepi sve podatke o meču koje nađeš (forme timova, statistike, poene, vesti, sastave, prethodne mečeve, bilo šta)..." class="w-full bg-brand-dark/80 border border-neutral-800 focus:border-brand-orange rounded-xl p-3 text-sm text-white outline-none transition-all resize-none font-mono placeholder:text-neutral-600"></textarea>
+                </div>
+
+                <button onclick="pokreniAnalizu()" id="btnAnaliziraj" class="w-full bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-black py-3.5 px-5 rounded-xl shadow-lg shadow-brand-orange/10 transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
+                    <i class="fa-solid fa-brain animate-pulse"></i> Pokreni Košarkašku AI Analizu
+                </button>
+            </div>
+
+            <!-- Kalkulator arbitraže -->
+            <div class="bg-brand-card border border-neutral-800/80 rounded-2xl p-5 shadow-xl">
+                <h2 class="text-base font-bold flex items-center gap-2 text-brand-orange mb-3">
+                    <i class="fa-solid fa-calculator"></i> Arbitraža & Surebet Provera
+                </h2>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <input type="number" id="arbKvota1" placeholder="Kvota 1" class="w-full bg-brand-dark/80 border border-neutral-800 focus:border-brand-orange rounded-lg p-2 text-xs text-white outline-none transition-all" oninput="izracunajArbitrazu()">
+                    </div>
+                    <div>
+                        <input type="number" id="arbKvota2" placeholder="Kvota 2" class="w-full bg-brand-dark/80 border border-neutral-800 focus:border-brand-orange rounded-lg p-2 text-xs text-white outline-none transition-all" oninput="izracunajArbitrazu()">
+                    </div>
+                </div>
+                <div id="arbRezultat" class="bg-brand-dark/80 border border-neutral-800 rounded-xl p-3 text-center text-xs text-neutral-400">
+                    Unesi obe kvote da proveriš da li postoji siguran profit (Surebet).
+                </div>
+            </div>
+        </div>
+
+        <!-- Desna kolona: Rezultati i Grafikoni -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+            
+            <!-- Prazno stanje pre analize -->
+            <div id="praznoStanje" class="bg-brand-card border border-neutral-800/80 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-xl flex-grow min-h-[400px]">
+                <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-full text-brand-orange mb-4">
+                    <i class="fa-solid fa-chart-pie text-4xl animate-pulse"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Spreman za Analizu i Grafikone</h3>
+                <p class="text-sm text-neutral-400 max-w-md">
+                    Unesi kvote i zalepi kopirane podatke o meču sa leve strane, a zatim klikni na dugme za pokretanje AI analize.
+                </p>
+                <div class="mt-6 text-xs text-neutral-500 bg-brand-dark/50 border border-neutral-800 rounded-lg p-3 max-w-sm">
+                    <i class="fa-solid fa-info-circle text-brand-orange"></i> Aplikacija će automatski iscrtati radarski grafikon i generisati detaljan košarkaški izveštaj po tvom tačnom šablonu!
+                </div>
+            </div>
+
+            <!-- Loader tokom analize -->
+            <div id="loaderAnalize" class="bg-brand-card border border-neutral-800/80 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-xl flex-grow min-h-[400px] hidden">
+                <div class="relative w-20 h-20 mb-6">
+                    <div class="absolute inset-0 rounded-full border-4 border-neutral-800"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-t-brand-orange animate-spin"></div>
+                    <i class="fa-solid fa-basketball text-3xl text-brand-orange absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-bounce"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" id="loaderNaslov">AI Analiza u Toku...</h3>
+                <p class="text-sm text-neutral-400 max-w-md" id="loaderStatus">
+                    Povezujemo se sa Google Gemini modelom i obrađujemo statistiku...
+                </p>
+            </div>
+
+            <!-- Rezultati analize -->
+            <div id="rezultatiKontejner" class="hidden flex flex-col gap-6">
+                
+                <!-- Glavna matrica i radar grafikon -->
+                <div class="bg-brand-card border border-neutral-800/80 rounded-2xl p-5 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-3">Statistička Procena Šansi</h3>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-neutral-300 font-bold" id="domacinIme">Domaćin</span>
+                                <span class="text-xs text-brand-orange font-bold" id="domacinSansa">50%</span>
+                            </div>
+                            <div class="w-full bg-neutral-900 rounded-full h-3 mb-4 overflow-hidden">
+                                <div id="domacinSansaBar" class="bg-gradient-to-r from-brand-orange to-brand-amber h-full rounded-full" style="width: 50%"></div>
+                            </div>
+
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-neutral-300 font-bold" id="gostIme">Gost</span>
+                                <span class="text-xs text-neutral-400 font-bold" id="gostSansa">50%</span>
+                            </div>
+                            <div class="w-full bg-neutral-900 rounded-full h-3 mb-5 overflow-hidden">
+                                <div id="gostSansaBar" class="bg-neutral-600 h-full rounded-full" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-neutral-800 pt-4 mt-2">
+                            <h4 class="text-xs uppercase tracking-wider text-neutral-400 mb-2">Kalkulacija Margine i Isplativosti</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-brand-dark p-2.5 rounded-xl border border-neutral-800/60 text-center">
+                                    <span class="block text-[10px] uppercase text-neutral-500 mb-0.5">Margina Kladionice</span>
+                                    <span class="text-sm font-black text-neutral-200" id="statMargina">0.00%</span>
+                                </div>
+                                <div class="bg-brand-dark p-2.5 rounded-xl border border-neutral-800/60 text-center">
+                                    <span class="block text-[10px] uppercase text-neutral-500 mb-0.5">Vrednost (Value Bet)</span>
+                                    <span class="text-sm font-black text-green-400" id="statValue">Nema</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radar grafikon za atribute -->
+                    <div class="flex flex-col items-center justify-center">
+                        <span class="text-xs font-semibold uppercase text-neutral-400 mb-2">Poređenje Ključnih Atributa</span>
+                        <div class="w-full max-w-[280px] aspect-square relative">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPREMAN TEKST ZA KOPIRANJE (Tvoj šablon) -->
+                <div class="bg-brand-card border border-neutral-800/80 rounded-2xl p-5 shadow-xl">
+                    <div class="flex justify-between items-center mb-4 border-b border-neutral-800 pb-3">
+                        <h3 class="text-base font-bold flex items-center gap-2 text-brand-orange">
+                            <i class="fa-solid fa-paste"></i> Profesionalna Tekstualna Analiza (Tvoj Šablon)
+                        </h3>
+                        <button onclick="kopirajIzvestaj()" class="bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-extrabold text-xs py-2 px-3.5 rounded-lg transition-all flex items-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-copy"></i> Kopiraj Analizu
+                        </button>
+                    </div>
+
+                    <!-- Prozor sa gotovim tekstom -->
+                    <div class="bg-brand-dark border border-neutral-800 rounded-xl p-4 font-mono text-xs sm:text-sm text-neutral-200 leading-relaxed max-h-[450px] overflow-y-auto whitespace-pre-wrap select-all focus:outline-none" id="konacnaAnaliza" tabindex="0">
+                        Generisanje analize...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Podnožje -->
+    <footer class="bg-brand-dark/80 border-t border-neutral-800/80 px-4 py-4 mt-8 text-center text-xs text-neutral-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>&copy; 2026 Košarkaški Analizator Pro • Sva prava zadržana</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-brand-orange"></i> Pokreće Google Gemini 3.1 Flash</span>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: Podešavanja API ključa -->
+    <div id="modalPostavke" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-brand-card border border-neutral-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
+            <div class="bg-brand-dark px-5 py-4 border-b border-neutral-800 flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2 text-brand-orange">
+                    <i class="fa-solid fa-gears"></i> API Podešavanja
+                </h3>
+                <button onclick="zatvoriPostavke()" class="text-neutral-500 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5">
+                <p class="text-xs text-neutral-400 mb-4 leading-relaxed">
+                    Aplikacija koristi zvanični Google Gemini AI za analizu. Da bi sve radilo na tvom telefonu ili na Vercel hostingu, unesi svoj besplatni Gemini API ključ.
+                </p>
+                <div class="mb-4">
+                    <label class="block text-xs text-neutral-400 uppercase font-semibold mb-1">Gemini API Ključ</label>
+                    <input type="password" id="apiKljucevic" placeholder="Nalepi ključ ovde..." class="w-full bg-brand-dark border border-neutral-800 focus:border-brand-orange rounded-xl px-3 py-2 text-sm text-white outline-none">
+                </div>
+                <a href="https://aistudio.google.com/" target="_blank" class="text-xs text-brand-orange font-bold hover:underline flex items-center gap-1 mb-5">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Klikni ovde da uzmeš besplatan ključ za 10 sekundi
+                </a>
+                <div class="flex gap-3">
+                    <button onclick="sacuvajPostavke()" class="flex-1 bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-bold py-2.5 rounded-xl transition-all text-xs uppercase tracking-wider">Sačuvaj Ključ</button>
+                    <button onclick="obrisiPostavke()" class="bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-neutral-400 hover:text-red-400 font-bold py-2.5 px-4 rounded-xl transition-all text-xs uppercase">Obriši</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="live-alert" class="alert-box"></div>
+    <!-- MODAL 2: Instalacija na mobilni -->
+    <div id="modalInstalacija" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-brand-card border border-neutral-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="bg-brand-dark px-5 py-4 border-b border-neutral-800 flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2 text-brand-orange">
+                    <i class="fa-solid fa-mobile-screen-button"></i> Kako instalirati aplikaciju
+                </h3>
+                <button onclick="zatvoriInstalaciju()" class="text-neutral-500 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex gap-3">
+                    <div class="bg-brand-dark p-2 rounded-lg text-brand-orange self-start"><i class="fa-brand fa-android text-lg"></i></div>
+                    <div>
+                        <h4 class="text-xs font-bold uppercase text-white mb-0.5">Android (Google Chrome)</h4>
+                        <p class="text-xs text-neutral-400 leading-relaxed">Klikni na 3 tačkice u gornjem desnom uglu pretraživača, a zatim na "Dodaj na početni ekran" ili "Instaliraj aplikaciju".</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 border-t border-neutral-800/80 pt-4">
+                    <div class="bg-brand-dark p-2 rounded-lg text-brand-orange self-start"><i class="fa-brand fa-apple text-lg"></i></div>
+                    <div>
+                        <h4 class="text-xs font-bold uppercase text-white mb-0.5">iPhone / iPad (Safari)</h4>
+                        <p class="text-xs text-neutral-400 leading-relaxed">Klikni na dugme "Podeli" (Share - ikonica sa kvadratićem i strelicom na gore), skroluj nadole i klikni na "Dodaj na početni ekran" (Add to Home Screen).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="section-title">Utakmice uživo (Skeniranje na 3 min)</div>
-    <div id="live-matches-grid" class="grid-container">
-        <div style="color: var(--gray-text); text-align: center; padding: 20px; font-size: 13px;">Učitavanje utakmica sa servera...</div>
+    <!-- ZVUČNO OBAVEŠTENJE / TOAST -->
+    <div id="toastObavestenje" class="fixed bottom-4 right-4 bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 shadow-2xl z-50 transform translate-y-10 opacity-0 transition-all duration-300 flex items-center gap-3">
+        <span id="toastIkona" class="text-brand-orange"><i class="fa-solid fa-circle-info"></i></span>
+        <span id="toastTekst" class="text-xs font-medium">Uspostavljeno!</span>
     </div>
 
     <script>
-        // ================= AUTOMATSKA ROTACIJA TVOJA 2 KLJUČA =================
-        const API_FOOTBALL_KEYS = [
-            '8464fe0b2c02cc648155fd7aaa8a5806', // Tvoj 1. ključ
-            'f1cce1e4be71307c45a7a206e4a16495'  // Tvoj 2. ključ
-        ];
-        
-        let currentKeyIndex = parseInt(localStorage.getItem('active_key_index')) || 0;
-        const ODDS_API_KEY = '0fe3d301aa11cda024d49acef8511f22';
-        // =====================================================================
+        // PWA Dinamički manifest
+        (function() {
+            const myManifest = {
+                "short_name": "Košarka Analize",
+                "name": "Košarkaški Analizator Pro",
+                "icons": [
+                    {
+                        "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='96' cy='96' r='60' fill='none' stroke='%23f97316' stroke-width='8'/><path d='M96 36 L96 156 M36 96 L156 96' stroke='%23f97316' stroke-width='4' stroke-dasharray='4,4'/></svg>",
+                        "type": "image/svg+xml",
+                        "sizes": "192x192"
+                    }
+                ],
+                "start_url": ".",
+                "background_color": "#080707",
+                "theme_color": "#12100e",
+                "display": "standalone",
+                "orientation": "portrait"
+            };
+            const stringManifest = JSON.stringify(myManifest);
+            const blob = new Blob([stringManifest], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            const relManifest = document.createElement('link');
+            relManifest.setAttribute('rel', 'manifest');
+            relManifest.setAttribute('href', manifestURL);
+            document.head.appendChild(relManifest);
+        })();
 
-        let remainingOddsCredits = parseInt(localStorage.getItem('odds_credits')) || 500;
-        document.getElementById('odds-count').innerText = `${remainingOddsCredits} / 500 preostalo`;
+        // Globalne Promenljive
+        let radarChartInstance = null;
 
-        let previousMatchesState = {};
-        let preMatchOddsCache = JSON.parse(localStorage.getItem('pre_match_odds_cache')) || {};
-        let lastCacheTime = parseInt(localStorage.getItem('last_cache_time')) || 0;
+        // Učitavanje na startu
+        window.onload = function() {
+            const sacuvaniKljuc = localStorage.getItem('gemini_api_key');
+            if (sacuvaniKljuc) {
+                document.getElementById('apiKljucevic').value = sacuvaniKljuc;
+            }
+        };
 
-        function updateOddsCredits(used) {
-            remainingOddsCredits = Math.max(0, remainingOddsCredits - used);
-            localStorage.setItem('odds_credits', remainingOddsCredits);
-            document.getElementById('odds-count').innerText = `${remainingOddsCredits} / 500 preostalo`;
+        // Obaveštenja (Toast)
+        function prikaziObavestenje(poruka, tip = "narandzasto") {
+            const toast = document.getElementById('toastObavestenje');
+            const tekst = document.getElementById('toastTekst');
+            const ikona = document.getElementById('toastIkona');
+
+            tekst.innerText = poruka;
+
+            if (tip === "red") {
+                ikona.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 text-base"></i>';
+            } else if (tip === "green") {
+                ikona.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-base"></i>';
+            } else {
+                ikona.innerHTML = '<i class="fa-solid fa-basketball text-brand-orange text-base animate-spin"></i>';
+            }
+
+            toast.classList.remove('translate-y-10', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 4000);
         }
 
-        function normalizeTeamName(name) {
-            return name.toLowerCase()
-                .replace(/fc|afc|real|united|city|hotspur|club|athletic|sv|fk|nk/g, '')
-                .trim();
+        // Modali
+        function otvoriPostavke() {
+            document.getElementById('modalPostavke').classList.remove('hidden');
+        }
+        function zatvoriPostavke() {
+            document.getElementById('modalPostavke').classList.add('hidden');
+        }
+        function otvoriInstalaciju() {
+            document.getElementById('modalInstalacija').classList.remove('hidden');
+        }
+        function zatvoriInstalaciju() {
+            document.getElementById('modalInstalacija').classList.add('hidden');
         }
 
-        async function cachePreMatchOdds(force = false) {
-            const sada = Date.now();
-            const cetiriSata = 4 * 60 * 60 * 1000;
+        // Podešavanja Logika
+        function sacuvajPostavke() {
+            const kljuc = document.getElementById('apiKljucevic').value.trim();
+            if (!kljuc) {
+                prikaziObavestenje("Polje za API ključ ne može biti prazno.", "red");
+                return;
+            }
+            localStorage.setItem('gemini_api_key', kljuc);
+            prikaziObavestenje("API ključ uspešno sačuvan!", "green");
+            zatvoriPostavke();
+        }
+        function obrisiPostavke() {
+            localStorage.removeItem('gemini_api_key');
+            document.getElementById('apiKljucevic').value = "";
+            prikaziObavestenje("API ključ uklonjen.", "red");
+        }
 
-            if (!force && lastCacheTime && (sada - lastCacheTime < cetiriSata) && Object.keys(preMatchOddsCache).length > 0) {
+        // Kopiranje Izveštaja
+        function kopirajIzvestaj() {
+            const analitikaText = document.getElementById('konacnaAnaliza').innerText;
+            
+            // Bezbedna metoda za kopiranje unutar iFrame okruženja
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = analitikaText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                prikaziObavestenje("Analiza kopirana u privremenu memoriju!", "green");
+            } catch (err) {
+                prikaziObavestenje("Došlo je do greške prilikom kopiranja.", "red");
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        // Učitavanje Primera Meča
+        function ucitajPrimerMeca() {
+            document.getElementById('kvota1').value = "1.85";
+            document.getElementById('kvota2').value = "1.95";
+            
+            document.getElementById('rawText').value = `Partizan - Crvena zvezda
+05.06.2026. - 20:30
+KLS Superliga - Finale Playoffa
+
+Partizan se u poslednje vreme muči sa odbranom reketa i u proseku dopušta čak 84.6 poena po meču u poslednjih pet utakmica. Tim trenera Obradovića u proseku beleži 52% šuta za dva poena i beleži samo 31.4 skokova po meču, a loš ulazak u drugu četvrtinu gde gube prednost im je glavna boljka ove sezone.
+
+Crvena zvezda igra odličnu odbranu na perimetru i nalazi se u nizu od pet uzastopnih pobeda u svim takmičenjima. Ekipa ima strašnu skok igru (prosečno 38.2 skoka po utakmici) i rešava prva poluvremena u svoju korist u čak 64% slučajeva. Brze tranzicije i bolja uigranost u odbrani daju im ogroman vetar u leđa u ovom meču.
+Međusobni dueli (H2H): Crvena zvezda je dobila 3 od poslednja 4 derbija odigrana u 2026. godini.`;
+
+            prikaziObavestenje("Primer meča uspešno učitan!", "green");
+        }
+
+        // Arbitražni kalkulator
+        function izracunajArbitrazu() {
+            const k1 = parseFloat(document.getElementById('arbKvota1').value);
+            const k2 = parseFloat(document.getElementById('arbKvota2').value);
+            const arbRez = document.getElementById('arbRezultat');
+
+            if (!k1 || !k2 || k1 <= 1 || k2 <= 1) {
+                arbRez.innerHTML = "Unesi obe kvote da proveriš da li postoji siguran profit.";
+                arbRez.className = "bg-brand-dark/80 border border-neutral-800 rounded-xl p-3 text-center text-xs text-neutral-400";
                 return;
             }
 
-            if (remainingOddsCredits < 1) return;
-            try {
-                const response = await fetch(`https://api.the-odds-api.com/v3/odds/?apiKey=${ODDS_API_KEY}&sport=soccer&region=eu&mkt=h2h`);
-                const data = await response.json();
+            const procenatPokrica = (1 / k1) + (1 / k2);
+            if (procenatPokrica < 1) {
+                const profitProcenat = ((1 - procenatPokrica) * 100).toFixed(2);
+                const ulog1 = ((1 / k1) / procenatPokrica * 100).toFixed(1);
+                const ulog2 = ((1 / k2) / procenatPokrica * 100).toFixed(1);
                 
-                updateOddsCredits(1);
+                arbRez.innerHTML = `<span class="text-green-400 font-bold block mb-1">🔥 PRONAĐENA ARBITRAŽA! Profit: ${profitProcenat}%</span>
+                                    Uloži: <b class="text-white">${ulog1}%</b> na prvu kvotu i <b class="text-white">${ulog2}%</b> na drugu kvotu.`;
+                arbRez.className = "bg-green-950/40 border border-green-800/80 rounded-xl p-3 text-center text-xs text-green-400";
+            } else {
+                const gubitakProcenat = ((procenatPokrica - 1) * 100).toFixed(2);
+                arbRez.innerHTML = `Nema arbitraže. Gubitak na ovoj kombinaciji iznosi <b>${gubitakProcenat}%</b>.`;
+                arbRez.className = "bg-brand-dark/80 border border-neutral-800 rounded-xl p-3 text-center text-xs text-neutral-400";
+            }
+        }
 
-                if (data.success && data.data) {
-                    data.data.forEach(match => {
-                        const key = `${normalizeTeamName(match.home_team)}_${normalizeTeamName(match.away_team)}`;
-                        const bookmaker = match.sites[0];
-                        if (bookmaker) {
-                            preMatchOddsCache[key] = {
-                                home: bookmaker.odds.h2h ? bookmaker.odds.h2h[0] : null,
-                                draw: bookmaker.odds.h2h ? bookmaker.odds.h2h[1] : null,
-                                away: bookmaker.odds.h2h ? bookmaker.odds.h2h[2] : null,
-                                timestamp: Date.now()
-                            };
-                        }
+        // Pokretanje AI Analize
+        async function pokreniAnalizu() {
+            const rawText = document.getElementById('rawText').value.trim();
+            const kvota1Val = parseFloat(document.getElementById('kvota1').value);
+            const kvota2Val = parseFloat(document.getElementById('kvota2').value);
+
+            if (!kvota1Val || !kvota2Val) {
+                prikaziObavestenje("Unesi kvote za oba tima pre analize.", "red");
+                return;
+            }
+            if (!rawText) {
+                prikaziObavestenje("Unesi podatke sa leve strane kako bi AI imao šta da analizira.", "red");
+                return;
+            }
+
+            // Provera ključa
+            const apiKey = localStorage.getItem('gemini_api_key') || "";
+            if (!apiKey) {
+                otvoriPostavke();
+                prikaziObavestenje("Unesi svoj besplatni Gemini API ključ da pokreneš analizu!", "red");
+                return;
+            }
+
+            // Priprema UI stanja
+            document.getElementById('praznoStanje').classList.add('hidden');
+            document.getElementById('rezultatiKontejner').classList.add('hidden');
+            document.getElementById('loaderAnalize').classList.remove('hidden');
+
+            document.getElementById('loaderStatus').innerText = "AI čita i raspoređuje košarkašku statistiku...";
+
+            // Izgradnja Prompt-a
+            const systemPrompt = `Ti si profesionalni košarkaški analitičar i ekspert za sportsko klađenje.
+Zadatak ti je da na osnovu unetog sirovog teksta i unetih kvota kladionice izvučeš precizne statističke parametre i generišeš analizu tačno u traženom formatu i stilu pisanja.
+
+OBAVEZAN FORMAT TEKSTA (moraš da vratiš tačno ovakvu strukturu u polju "analiza_tekst", koristi procente i parametre prilagođene unetom tekstu):
+[Ime Domacina] - [Ime Gosta]
+[Datum] - [Vreme]
+[Naziv Lige/Takmičenja]
+
+[Ime Domacina] [tekst o formi, konstantnosti, statistici, poenima, procentima šuta, skokovima i slabim/jakim stranama tima na srpskom jeziku (ekavicom) u narativnom i stručnom stilu].
+
+[Ime Gosta] [tekst o formi, prednostima, odbrani, napadu, procentima šuta i najvažnijim segmentima igre na srpskom jeziku (ekavicom)].
+[Međusobni dueli / H2H informacija].
+
+S obzirom na to da [detaljna logička sinteza zašto je predložena opklada najbolja i najisplativija na osnovu svih parametara].
+✅ Predlog: [Naziv predloga sa hendikepom, granicom poena ili konačnim ishodom]
+💰 Kvota: [Kvota predloga, obavezno realna i bliska unetim kvotama]
+
+Takođe, izračunaj verovatnoće pobede u procentima (pobeda_domacin i pobeda_gost), kao i ocene od 1 do 10 za sledeće košarkaške atribute oba tima:
+1. Napad (napad_domacin, napad_gost)
+2. Odbrana (odbrana_domacin, odbrana_gost)
+3. Šut iz igre (sut_domacin, sut_gost)
+4. Skok igra (skok_domacin, skok_gost)
+5. Trenutna forma (forma_domacin, forma_gost)
+
+Vrati isključivo validan JSON objekat sa sledećim poljima:
+{
+  "domacin_ime": "Ime domaćeg tima",
+  "gost_ime": "Ime gostujućeg tima",
+  "pobeda_domacin": 55.5, // procenat šanse za pobedu domaćina
+  "pobeda_gost": 44.5, // procenat šanse za pobedu gosta
+  "napad_domacin": 8.5, "napad_gost": 7.2,
+  "odbrana_domacin": 6.8, "odbrana_gost": 8.0,
+  "sut_domacin": 7.5, "sut_gost": 8.2,
+  "skok_domacin": 7.0, "skok_gost": 9.0,
+  "forma_domacin": 6.5, "forma_gost": 8.5,
+  "analiza_tekst": "Ceo formatirani tekst analize tačno po šablonu..."
+}`;
+
+            const userQuery = `Sirovi tekst meča:
+${rawText}
+
+Kvote iz kladionice:
+Kvota na Domacina: ${kvota1Val}
+Kvota na Gosta: ${kvota2Val}`;
+
+            // Slanje zahteva sa eksponencijalnim backoff-om
+            let uspeh = false;
+            let pokusaj = 0;
+            let delay = 1000;
+            let resultText = "";
+
+            while (!uspeh && pokusaj < 5) {
+                try {
+                    pokusaj++;
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: userQuery }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            generationConfig: {
+                                responseMimeType: "application/json"
+                            }
+                        })
                     });
-                    localStorage.setItem('pre_match_odds_cache', JSON.stringify(preMatchOddsCache));
-                    localStorage.setItem('last_cache_time', sada.toString());
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        uspeh = true;
+                    } else {
+                        throw new Error("API Neuspešan");
+                    }
+                } catch (err) {
+                    if (pokusaj >= 5) {
+                        document.getElementById('loaderAnalize').classList.add('hidden');
+                        document.getElementById('praznoStanje').classList.remove('hidden');
+                        prikaziObavestenje("Greška pri povezivanju sa AI modelom. Proveri svoj API ključ.", "red");
+                        return;
+                    }
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
                 }
-            } catch (e) {
-                console.error("Greška pri keširanju kvota", e);
             }
-        }
 
-        async function proveriKvoteUzivoZaMec(homeTeam, awayTeam) {
-            if (remainingOddsCredits < 1) return null;
+            // Obrada dobijenog odgovora
             try {
-                const response = await fetch(`https://api.the-odds-api.com/v3/odds/?apiKey=${ODDS_API_KEY}&sport=soccer&region=eu&mkt=h2h`);
-                const data = await response.json();
-                
-                updateOddsCredits(1); 
+                const analiziranPodatak = JSON.parse(resultText);
 
-                const matchOdds = data.data.find(m => 
-                    normalizeTeamName(m.home_team).includes(normalizeTeamName(homeTeam)) || 
-                    normalizeTeamName(m.away_team).includes(normalizeTeamName(awayTeam))
+                // Ažuriranje imena i šansi u interfejsu
+                document.getElementById('domacinIme').innerText = analiziranPodatak.domacin_ime || "Domaćin";
+                document.getElementById('gostIme').innerText = analiziranPodatak.gost_ime || "Gost";
+
+                const pDomacin = Math.round(analiziranPodatak.pobeda_domacin);
+                const pGost = Math.round(analiziranPodatak.pobeda_gost);
+
+                document.getElementById('domacinSansa').innerText = `${pDomacin}%`;
+                document.getElementById('gostSansa').innerText = `${pGost}%`;
+                document.getElementById('domacinSansaBar').style.width = `${pDomacin}%`;
+                document.getElementById('gostSansaBar').style.width = `${pGost}%`;
+
+                // Računanje Margine i Value Beta
+                const impl1 = 1 / kvota1Val;
+                const impl2 = 1 / kvota2Val;
+                const margina = ((impl1 + impl2) - 1) * 100;
+                document.getElementById('statMargina').innerText = `${margina.toFixed(2)}%`;
+
+                // Provera Value Beta
+                const realnaSansa1 = pDomacin / 100;
+                const realnaSansa2 = pGost / 100;
+                let valuePoruka = "Nema prednosti";
+                let valueBoja = "text-neutral-400";
+
+                if (realnaSansa1 * kvota1Val > 1.05) {
+                    const edge = ((realnaSansa1 * kvota1Val) - 1) * 100;
+                    valuePoruka = `Vrednost na 1 (+${edge.toFixed(1)}%)`;
+                    valueBoja = "text-green-400";
+                } else if (realnaSansa2 * kvota2Val > 1.05) {
+                    const edge = ((realnaSansa2 * kvota2Val) - 1) * 100;
+                    valuePoruka = `Vrednost na 2 (+${edge.toFixed(1)}%)`;
+                    valueBoja = "text-green-400";
+                }
+
+                const valueElem = document.getElementById('statValue');
+                valueElem.innerText = valuePoruka;
+                valueElem.className = `text-sm font-black ${valueBoja}`;
+
+                // Prikaz finalnog teksta
+                document.getElementById('konacnaAnaliza').innerText = analiziranPodatak.analiza_tekst;
+
+                // Crtanje Radarskog Grafikona
+                iscrtajGrafikon(
+                    analiziranPodatak.domacin_ime || "Domaćin",
+                    analiziranPodatak.gost_ime || "Gost",
+                    [
+                        analiziranPodatak.napad_domacin, 
+                        analiziranPodatak.odbrana_domacin, 
+                        analiziranPodatak.sut_domacin, 
+                        analiziranPodatak.skok_domacin, 
+                        analiziranPodatak.forma_domacin
+                    ],
+                    [
+                        analiziranPodatak.napad_gost, 
+                        analiziranPodatak.odbrana_gost, 
+                        analiziranPodatak.sut_gost, 
+                        analiziranPodatak.skok_gost, 
+                        analiziranPodatak.forma_gost
+                    ]
                 );
-                
-                if (matchOdds) {
-                    const bookmaker = matchOdds.sites[0];
-                    if (bookmaker) {
-                        return {
-                            home: bookmaker.odds.h2h[0],
-                            draw: bookmaker.odds.h2h[1],
-                            away: bookmaker.odds.h2h[2]
-                        };
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            }
-            return null;
-        }
 
-        function prikaziLiveUzbinu(naslov, poruka) {
-            const alertBox = document.getElementById('live-alert');
-            alertBox.style.display = 'block';
-            alertBox.innerHTML = `<strong>🚨 ${naslov}</strong><br>${poruka}`;
-            playAlertSound();
-            setTimeout(() => { alertBox.style.display = 'none'; }, 25000);
-        }
+                // Promena prikaza
+                document.getElementById('loaderAnalize').classList.add('hidden');
+                document.getElementById('rezultatiKontejner').classList.remove('hidden');
+                prikaziObavestenje("Košarkaška analiza je spremna!", "green");
 
-        function playAlertSound() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.8);
-            } catch (e) {
-                console.log("Korisnik mora kliknuti na stranicu jednom da bi se zvuk aktivirao.");
+            } catch (err) {
+                document.getElementById('loaderAnalize').classList.add('hidden');
+                document.getElementById('praznoStanje').classList.remove('hidden');
+                prikaziObavestenje("Greška prilikom raščlanjivanja AI podataka.", "red");
             }
         }
 
-        // FUNKCIJA ZA PRESEK STANJA U 12:00h i 17:00h
-        function proveriPresekStanja(liveMatches) {
-            const sada = new Date();
-            const sati = sada.getHours();
-            const minuti = sada.getMinutes();
+        // Funkcija za crtanje radarskog grafikona
+        function iscrtajGrafikon(domacin, gost, podaciDomacin, podaciGost) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
             
-            if ((sati === 12 || sati === 17) && minuti < 5) {
-                const presecBox = document.getElementById('presec-box');
-                const presecTimeTitle = document.getElementById('presec-time-title');
-                const presecItems = document.getElementById('presec-items');
-                
-                presecTimeTitle.innerText = `📊 AUTOMATSKI PRESEK STANJA U ${sati}:00h`;
-                presecItems.innerHTML = '';
-                
-                let nasaoUtakmice = false;
-                
-                liveMatches.forEach(item => {
-                    const teams = item.teams;
-                    const goals = item.goals;
-                    const minut = item.fixture.status.elapsed ?? 0;
-                    
-                    const homeTeam = teams.home.name;
-                    const awayTeam = teams.away.name;
-                    const homeScore = goals.home ?? 0;
-                    const awayScore = goals.away ?? 0;
-                    
-                    const cacheKey = `${normalizeTeamName(homeTeam)}_${normalizeTeamName(awayTeam)}`;
-                    const preMatchData = preMatchOddsCache[cacheKey];
-                    
-                    let favoritInfo = '';
-                    if (preMatchData) {
-                        if (preMatchData.home && preMatchData.home < 1.75) {
-                            favoritInfo = ` (Favorit: ${homeTeam} ⭐)`;
-                        } else if (preMatchData.away && preMatchData.away < 1.75) {
-                            favoritInfo = ` (Favorit: ${awayTeam} ⭐)`;
-                        }
-                    }
-                    
-                    nasaoUtakmice = true;
-                    presecItems.innerHTML += `<li>[${minut}'] <strong>${homeTeam} ${homeScore}:${awayScore} ${awayTeam}</strong>${favoritInfo}</li>`;
-                });
-                
-                if (!nasaoUtakmice) {
-                    presecItems.innerHTML = '<li>Trenutno nema aktivnih utakmica na terenu u ovom preseku.</li>';
-                }
-                
-                presecBox.style.display = 'block';
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
             }
-        }
 
-        async function fetchLiveMatches() {
-            const aktivniKljuc = API_FOOTBALL_KEYS[currentKeyIndex];
-
-            try {
-                const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
-                    method: "GET",
-                    headers: {
-                        "x-apisports-key": aktivniKljuc
-                    }
-                });
-
-                const resData = await response.json();
-
-                if (resData.errors && (resData.errors.rateLimit || resData.errors.requests || resData.errors.token)) {
-                    console.warn(`Ključ na indeksu ${currentKeyIndex} je limitiran. Rotiram...`);
-                    currentKeyIndex = (currentKeyIndex + 1) % API_FOOTBALL_KEYS.length;
-                    localStorage.setItem('active_key_index', currentKeyIndex);
-                    fetchLiveMatches();
-                    return;
-                }
-
-                const matches = resData.response || [];
-                const grid = document.getElementById('live-matches-grid');
-                grid.innerHTML = '';
-
-                proveriPresekStanja(matches);
-
-                if (matches.length === 0) {
-                    grid.innerHTML = '<div style="color: var(--gray-text); text-align: center; padding: 20px; font-size: 13px;">Trenutno nema aktivnih utakmica uživo na svetu.</div>';
-                    return;
-                }
-
-                for (const item of matches) {
-                    const fixture = item.fixture;
-                    const league = item.league;
-                    const teams = item.teams;
-                    const goals = item.goals;
-                    const events = item.events || [];
-
-                    const homeTeam = teams.home.name;
-                    const awayTeam = teams.away.name;
-                    const homeLogo = teams.home.logo;
-                    const awayLogo = teams.away.logo;
-                    const homeScore = goals.home ?? 0;
-                    const awayScore = goals.away ?? 0;
-                    const minut = fixture.status.elapsed ?? 0;
-                    const matchId = fixture.id;
-
-                    let homeRedCards = events.filter(e => e.type === "Card" && e.detail === "Red Card" && e.team.id === teams.home.id).length;
-                    let awayRedCards = events.filter(e => e.type === "Card" && e.detail === "Red Card" && e.team.id === teams.away.id).length;
-
-                    const cacheKey = `${normalizeTeamName(homeTeam)}_${normalizeTeamName(awayTeam)}`;
-                    const preMatchData = preMatchOddsCache[cacheKey];
-
-                    let isHomeFavorit = false;
-                    let isAwayFavorit = false;
-                    let pocetnaKvotaFavorita = null;
-
-                    if (preMatchData) {
-                        if (preMatchData.home && preMatchData.home < 1.75) {
-                            isHomeFavorit = true;
-                            pocetnaKvotaFavorita = preMatchData.home;
-                        } else if (preMatchData.away && preMatchData.away < 1.75) {
-                            isAwayFavorit = true;
-                            pocetnaKvotaFavorita = preMatchData.away;
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Napad', 'Odbrana', 'Šut', 'Skok', 'Forma'],
+                    datasets: [
+                        {
+                            label: domacin,
+                            data: podaciDomacin,
+                            backgroundColor: 'rgba(249, 115, 22, 0.25)',
+                            borderColor: '#f97316',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#f97316',
+                            pointHoverBackgroundColor: '#fff',
+                        },
+                        {
+                            label: gost,
+                            data: podaciGost,
+                            backgroundColor: 'rgba(115, 115, 115, 0.25)',
+                            borderColor: '#a3a3a3',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#a3a3a3',
+                            pointHoverBackgroundColor: '#fff',
                         }
-                    }
-
-                    const staroStanje = previousMatchesState[matchId];
-                    let triggerKvote = false;
-                    let razlogTrigera = '';
-                    let naslovTrigera = 'DETEKTOVANA PROMENA';
-
-                    if (staroStanje) {
-                        if (staroStanje.homeRedCards < homeRedCards || staroStanje.awayRedCards < awayRedCards) {
-                            triggerKvote = true;
-                            naslovTrigera = "CRVENI KARTON!";
-                            razlogTrigera = `Pao je crveni karton na meču ${homeTeam} - ${awayTeam}! Odmah povlačim uživo kvote.`;
-                        }
-
-                        if (staroStanje.homeScore !== homeScore || staroStanje.awayScore !== awayScore) {
-                            if (isHomeFavorit && awayScore > homeScore) {
-                                triggerKvote = true;
-                                naslovTrigera = "FAVORIT GUBI!";
-                                razlogTrigera = `Domaći favorit <strong>${homeTeam}</strong> gubi od ${awayTeam} (${homeScore}:${awayScore})!`;
-                            } else if (isAwayFavorit && homeScore > awayScore) {
-                                triggerKvote = true;
-                                naslovTrigera = "FAVORIT GUBI!";
-                                razlogTrigera = `Gostujući favorit <strong>${awayTeam}</strong> gubi od ${homeTeam} (${homeScore}:${awayScore})!`;
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e5e5',
+                                font: { size: 10, family: 'sans-serif' }
                             }
                         }
-
-                        if (minut >= 75 && homeScore === 0 && awayScore === 0 && !staroStanje.trig75) {
-                            if (isHomeFavorit || isAwayFavorit) {
-                                triggerKvote = true;
-                                naslovTrigera = "KASNI PRITISAK (75. MIN)";
-                                razlogTrigera = `Meč ${homeTeam} - ${awayTeam} je i dalje na 0:0 u 75. minutu. Favorit traži gol!`;
-                                item.trig75 = true;
-                            }
+                    },
+                    scales: {
+                        r: {
+                            grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.08)' },
+                            pointLabels: {
+                                color: '#a3a3a3',
+                                font: { size: 10, weight: 'bold' }
+                            },
+                            ticks: {
+                                display: false,
+                                stepSize: 2
+                            },
+                            min: 0,
+                            max: 10
                         }
                     }
-
-                    previousMatchesState[matchId] = {
-                        homeScore: homeScore,
-                        awayScore: awayScore,
-                        homeRedCards: homeRedCards,
-                        awayRedCards: awayRedCards,
-                        trig75: staroStanje ? staroStanje.trig75 : false
-                    };
-
-                    let prikazKvotaUzivo = '';
-                    if (triggerKvote) {
-                        const uzivoKvote = await proveriKvoteUzivoZaMec(homeTeam, awayTeam);
-                        if (uzivoKvote) {
-                            let tekstSkoka = '';
-                            if (isHomeFavorit) {
-                                const skokProcenat = (((uzivoKvote.home - pocetnaKvotaFavorita) / pocetnaKvotaFavorita) * 100).toFixed(0);
-                                tekstSkoka = `<br>📈 Kvota na ${homeTeam} skočila sa ${pocetnaKvotaFavorita} na ${uzivoKvote.home} (+${skokProcenat}%)`;
-                            } else if (isAwayFavorit) {
-                                const skokProcenat = (((uzivoKvote.away - pocetnaKvotaFavorita) / pocetnaKvotaFavorita) * 100).toFixed(0);
-                                tekstSkoka = `<br>📈 Kvota na ${awayTeam} skočila sa ${pocetnaKvotaFavorita} na ${uzivoKvote.away} (+${skokProcenat}%)`;
-                            }
-
-                            prikaziLiveUzbinu(naslovTrigera, razlogTrigera + tekstSkoka);
-
-                            prikazKvotaUzivo = `
-                                <div class="odds-badge">
-                                    <strong>⚡ TRENUTNE UŽIVO KVOTE:</strong>
-                                    <span>1: <strong>${uzivoKvote.home}</strong> | X: <strong>${uzivoKvote.draw}</strong> | 2: <strong>${uzivoKvote.away}</strong></span>
-                                    <span style="font-size: 11px; color: var(--warning-color);">${tekstSkoka}</span>
-                                </div>
-                            `;
-                        }
-                    }
-
-                    grid.innerHTML += `
-                        <div class="match-card">
-                            <div class="match-header">
-                                <span>🏆 ${league.name} (${league.country})</span>
-                                <span style="color: var(--accent-color); font-weight: bold;">⏱️ ${minut}'</span>
-                            </div>
-                            <div class="match-teams">
-                                <div class="team-row">
-                                    <div class="team-info">
-                                        <img src="${homeLogo}" class="team-logo" onerror="this.src='https://via.placeholder.com/24'">
-                                        <span class="team-name" style="${isHomeFavorit ? 'color: var(--warning-color);' : ''}">${homeTeam} ${isHomeFavorit ? '⭐' : ''}</span>
-                                        ${homeRedCards > 0 ? `<span class="card-red">${homeRedCards} CRVENI</span>` : ''}
-                                    </div>
-                                    <span class="score">${homeScore}</span>
-                                </div>
-                                <div class="team-row">
-                                    <div class="team-info">
-                                        <img src="${awayLogo}" class="team-logo" onerror="this.src='https://via.placeholder.com/24'">
-                                        <span class="team-name" style="${isAwayFavorit ? 'color: var(--warning-color);' : ''}">${awayTeam} ${isAwayFavorit ? '⭐' : ''}</span>
-                                        ${awayRedCards > 0 ? `<span class="card-red">${awayRedCards} CRVENI</span>` : ''}
-                                    </div>
-                                    <span class="score">${awayScore}</span>
-                                </div>
-                            </div>
-                            ${prikazKvotaUzivo}
-                        </div>
-                    `;
                 }
-
-            } catch (error) {
-                console.error("Greška pri povlačenju utakmica uživo:", error);
-                document.getElementById('live-matches-grid').innerHTML = 
-                    `<div style="color: var(--danger-color); text-align: center; padding: 20px; font-size: 13px;">
-                        Privremena greška u radu sa API-jem. Sistem pokušava ponovo...
-                     </div>`;
-            }
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registrovan', reg.scope))
-                    .catch(err => console.log('SW greška', err));
             });
         }
-
-        cachePreMatchOdds().then(() => {
-            fetchLiveMatches();
-        });
-
-        // Skeniranje utakmica postavljeno na 3 minuta (180000ms)
-        setInterval(fetchLiveMatches, 180000);
-        setInterval(cachePreMatchOdds, 14400000);
-
     </script>
 </body>
 </html>
