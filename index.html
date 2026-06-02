@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Košarka Analize">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='96' cy='96' r='60' fill='none' stroke='%23f97316' stroke-width='8'/><path d='M96 36 L96 156 M36 96 L156 96' stroke='%23f97316' stroke-width='4' stroke-dasharray='4,4'/></svg>">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/basketball.png">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +37,7 @@
         }
     </script>
     <style>
-        /* Sakrivanje scrollbar-a za premium izgled */
+        /* Premium tamna estetika i sakrivanje scrollbar-a */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -72,12 +72,9 @@
             </div>
             
             <div class="flex items-center gap-2">
-                <!-- Glavno instalaciono dugme koje se dinamički aktivira -->
-                <button id="btnInstalirajHeader" onclick="pokreniPWAInstalaciju()" class="hidden bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-xs text-neutral-300 px-3 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg animate-pulse">
-                    <i class="fa-solid fa-cloud-arrow-down text-brand-orange"></i> Instaliraj na Telefon/Komp 📱
-                </button>
-                <button onclick="otvoriInstalaciju()" class="bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-xs text-neutral-300 px-3 py-2 rounded-lg transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-brand-orange"></i> Uputstvo 💡
+                <!-- Glavno dugme za instalaciju (Uvek vidljivo i aktivno kao u teniskoj verziji) -->
+                <button id="btnInstalirajHeader" onclick="pokreniPWAInstalaciju()" class="bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-xs text-neutral-300 px-3 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-cloud-arrow-down text-brand-orange"></i> Instaliraj App 📱
                 </button>
                 <button onclick="otvoriPostavke()" class="bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-bold text-xs px-3 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-brand-orange/10">
                     <i class="fa-solid fa-gears text-sm"></i> Podešavanja ⚙️
@@ -332,13 +329,13 @@
                 "name": "Košarkaški Analizator Pro",
                 "icons": [
                     {
-                        "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='96' cy='96' r='60' fill='none' stroke='%23f97316' stroke-width='8'/><path d='M96 36 L96 156 M36 96 L156 96' stroke='%23f97316' stroke-width='4' stroke-dasharray='4,4'/></svg>",
-                        "type": "image/svg+xml",
+                        "src": "https://img.icons8.com/color/192/basketball.png",
+                        "type": "image/png",
                         "sizes": "192x192"
                     },
                     {
-                        "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='256' cy='256' r='160' fill='none' stroke='%23f97316' stroke-width='16'/><path d='M256 96 L256 416 M96 256 L416 256' stroke='%23f97316' stroke-width='8' stroke-dasharray='8,8'/></svg>",
-                        "type": "image/svg+xml",
+                        "src": "https://img.icons8.com/color/512/basketball.png",
+                        "type": "image/png",
                         "sizes": "512x512"
                     }
                 ],
@@ -368,7 +365,6 @@
                             e.waitUntil(clients.claim());
                         });
                         self.addEventListener('fetch', (e) => {
-                            // Jednostavan proksi
                             e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
                         });
                     `;
@@ -377,7 +373,7 @@
                     
                     navigator.serviceWorker.register(swUrl)
                     .then(reg => console.log('Virtuelni SW uspešno povezan!'))
-                    .catch(err => console.log('Virtuelni SW preskočen (standardna prečica aktivna).'));
+                    .catch(err => console.log('Virtuelni SW preskočen.'));
                 });
             }
         })();
@@ -390,25 +386,23 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Prikazujemo dugme za instalaciju u zaglavlju
-            const installBtn = document.getElementById('btnInstalirajHeader');
-            if (installBtn) {
-                installBtn.classList.remove('hidden');
-            }
+            console.log("Pretraživač je odobrio direktnu instalaciju.");
         });
 
-        // Funkcija za pokretanje sistemske instalacije
+        // Funkcija za pokretanje sistemske instalacije (Hibridna sa fallbackom)
         function pokreniPWAInstalaciju() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    prikaziObavestenje("Hvala na instalaciji! Aplikacija je dodata.", "green");
-                    const installBtn = document.getElementById('btnInstalirajHeader');
-                    if (installBtn) installBtn.classList.add('hidden');
-                }
-                deferredPrompt = null;
-            });
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        prikaziObavestenje("Hvala na instalaciji! Aplikacija je dodata.", "green");
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                // Ako nema prompta, otvori interaktivni modal kao u teniskoj app!
+                otvoriInstalaciju();
+            }
         }
 
         // Učitavanje na startu
