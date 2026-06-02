@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Košarkaški analizator i kalkulator</title>
+    <title>Košarkaški Analizator Pro</title>
+    
+    <!-- PWA meta tagovi za iOS i Android instalaciju -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Košarka Analize">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='96' cy='96' r='60' fill='none' stroke='%23f97316' stroke-width='8'/><path d='M96 36 L96 156 M36 96 L156 96' stroke='%23f97316' stroke-width='4' stroke-dasharray='4,4'/></svg>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -29,7 +37,7 @@
         }
     </script>
     <style>
-        /* Sakrivanje scrollbar-a za bolji mobilni izgled */
+        /* Sakrivanje scrollbar-a za premium izgled */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -52,7 +60,7 @@
     <header class="bg-brand-dark/95 border-b border-neutral-800 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-br from-brand-orange to-brand-amber p-2 rounded-xl text-neutral-950">
+                <div class="bg-gradient-to-br from-brand-orange to-brand-amber p-2 rounded-xl text-neutral-950 shadow-md shadow-brand-orange/20">
                     <i class="fa-solid fa-basketball text-2xl animate-bounce"></i>
                 </div>
                 <div>
@@ -64,8 +72,12 @@
             </div>
             
             <div class="flex items-center gap-2">
+                <!-- Glavno instalaciono dugme koje se dinamički aktivira -->
+                <button id="btnInstalirajHeader" onclick="pokreniPWAInstalaciju()" class="hidden bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-xs text-neutral-300 px-3 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg animate-pulse">
+                    <i class="fa-solid fa-cloud-arrow-down text-brand-orange"></i> Instaliraj na Telefon/Komp 📱
+                </button>
                 <button onclick="otvoriInstalaciju()" class="bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-xs text-neutral-300 px-3 py-2 rounded-lg transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-mobile-screen-button text-brand-orange"></i> Instaliraj App 📱
+                    <i class="fa-solid fa-circle-info text-brand-orange"></i> Uputstvo 💡
                 </button>
                 <button onclick="otvoriPostavke()" class="bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-bold text-xs px-3 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-brand-orange/10">
                     <i class="fa-solid fa-gears text-sm"></i> Podešavanja ⚙️
@@ -112,7 +124,7 @@
                 </div>
 
                 <button onclick="pokreniAnalizu()" id="btnAnaliziraj" class="w-full bg-gradient-to-r from-brand-orange to-brand-amber hover:from-brand-orange hover:to-orange-500 text-neutral-950 font-black py-3.5 px-5 rounded-xl shadow-lg shadow-brand-orange/10 transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
-                    <i class="fa-solid fa-brain animate-pulse"></i> Pokreni Košarkašku AI Analizu
+                    <i class="fa-solid fa-brain"></i> Pokreni Košarkašku AI Analizu
                 </button>
             </div>
 
@@ -239,7 +251,7 @@
     <footer class="bg-brand-dark/80 border-t border-neutral-800/80 px-4 py-4 mt-8 text-center text-xs text-neutral-500">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <span>&copy; 2026 Košarkaški Analizator Pro • Sva prava zadržana</span>
-            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-brand-orange"></i> Pokreće Google Gemini 3.1 Flash</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-brand-orange"></i> Pokreće Google Gemini 1.5 Flash / 2.5 Flash</span>
         </div>
     </footer>
 
@@ -271,7 +283,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Instalacija na mobilni -->
+    <!-- MODAL 2: Instalacija i PWA Uputstvo -->
     <div id="modalInstalacija" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-brand-card border border-neutral-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div class="bg-brand-dark px-5 py-4 border-b border-neutral-800 flex justify-between items-center">
@@ -282,17 +294,24 @@
             </div>
             <div class="p-5 space-y-4">
                 <div class="flex gap-3">
-                    <div class="bg-brand-dark p-2 rounded-lg text-brand-orange self-start"><i class="fa-brand fa-android text-lg"></i></div>
+                    <div class="bg-neutral-900 p-2.5 rounded-lg text-brand-orange self-start"><i class="fa-brands fa-chrome text-lg"></i></div>
                     <div>
-                        <h4 class="text-xs font-bold uppercase text-white mb-0.5">Android (Google Chrome)</h4>
-                        <p class="text-xs text-neutral-400 leading-relaxed">Klikni na 3 tačkice u gornjem desnom uglu pretraživača, a zatim na "Dodaj na početni ekran" ili "Instaliraj aplikaciju".</p>
+                        <h4 class="text-xs font-bold uppercase text-white mb-0.5">Računar (Chrome / Edge / Opera)</h4>
+                        <p class="text-xs text-neutral-400 leading-relaxed">U vrhu pretraživača (desno u adresnoj traci) klikni na ikonicu kompjutera sa strelicom nadole <b class="text-brand-orange">"Install App"</b> ili klikni na tri tačkice pa na "Instaliraj aplikaciju".</p>
                     </div>
                 </div>
-                <div class="flex gap-3 border-t border-neutral-800/80 pt-4">
-                    <div class="bg-brand-dark p-2 rounded-lg text-brand-orange self-start"><i class="fa-brand fa-apple text-lg"></i></div>
+                <div class="flex gap-3 border-t border-neutral-800/60 pt-4">
+                    <div class="bg-neutral-900 p-2.5 rounded-lg text-brand-orange self-start"><i class="fa-brands fa-android text-lg"></i></div>
+                    <div>
+                        <h4 class="text-xs font-bold uppercase text-white mb-0.5">Android (Google Chrome)</h4>
+                        <p class="text-xs text-neutral-400 leading-relaxed">Klikni na 3 tačkice u gornjem desnom uglu pretraživača, a zatim na <b class="text-brand-orange">"Instaliraj aplikaciju"</b> ili "Dodaj na početni ekran".</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 border-t border-neutral-800/60 pt-4">
+                    <div class="bg-neutral-900 p-2.5 rounded-lg text-brand-orange self-start"><i class="fa-brands fa-apple text-lg"></i></div>
                     <div>
                         <h4 class="text-xs font-bold uppercase text-white mb-0.5">iPhone / iPad (Safari)</h4>
-                        <p class="text-xs text-neutral-400 leading-relaxed">Klikni na dugme "Podeli" (Share - ikonica sa kvadratićem i strelicom na gore), skroluj nadole i klikni na "Dodaj na početni ekran" (Add to Home Screen).</p>
+                        <p class="text-xs text-neutral-400 leading-relaxed">Otvorite sajt isključivo u pretraživaču <b class="text-brand-orange">Safari</b>. Kliknite na dugme <b class="text-brand-orange">"Podeli"</b> (Share - ikonica sa kvadratićem i strelicom na gore), skrolujte nadole i kliknite na <b class="text-brand-orange">"Dodaj na početni ekran"</b>.</p>
                     </div>
                 </div>
             </div>
@@ -300,13 +319,13 @@
     </div>
 
     <!-- ZVUČNO OBAVEŠTENJE / TOAST -->
-    <div id="toastObavestenje" class="fixed bottom-4 right-4 bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 shadow-2xl z-50 transform translate-y-10 opacity-0 transition-all duration-300 flex items-center gap-3">
+    <div id="toastObavestenje" class="fixed bottom-4 right-4 bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 shadow-2xl z-50 transform translate-y-10 opacity-0 transition-all duration-300 flex items-center gap-3 max-w-sm">
         <span id="toastIkona" class="text-brand-orange"><i class="fa-solid fa-circle-info"></i></span>
-        <span id="toastTekst" class="text-xs font-medium">Uspostavljeno!</span>
+        <span id="toastTekst" class="text-xs font-medium leading-relaxed">Uspostavljeno!</span>
     </div>
 
     <script>
-        // PWA Dinamički manifest
+        // PWA Dinamički manifest sa podrškom za punu instalaciju
         (function() {
             const myManifest = {
                 "short_name": "Košarka Analize",
@@ -316,6 +335,11 @@
                         "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='96' cy='96' r='60' fill='none' stroke='%23f97316' stroke-width='8'/><path d='M96 36 L96 156 M36 96 L156 96' stroke='%23f97316' stroke-width='4' stroke-dasharray='4,4'/></svg>",
                         "type": "image/svg+xml",
                         "sizes": "192x192"
+                    },
+                    {
+                        "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'><rect width='100%' height='100%' fill='%2312100e'/><circle cx='256' cy='256' r='160' fill='none' stroke='%23f97316' stroke-width='16'/><path d='M256 96 L256 416 M96 256 L416 256' stroke='%23f97316' stroke-width='8' stroke-dasharray='8,8'/></svg>",
+                        "type": "image/svg+xml",
+                        "sizes": "512x512"
                     }
                 ],
                 "start_url": ".",
@@ -331,10 +355,52 @@
             relManifest.setAttribute('rel', 'manifest');
             relManifest.setAttribute('href', manifestURL);
             document.head.appendChild(relManifest);
+
+            // Registracija Service Workera za PWA instalaciju (simulirano/lokalno)
+            if ('serviceWorker' in navigator) {
+                // Generišemo Service Worker iz Bloba koji samo vraća zahteve, što zadovoljava PWA standarde
+                const swCode = `
+                    self.addEventListener('install', (e) => self.skipWaiting());
+                    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+                    self.addEventListener('fetch', (e) => {
+                        // Pass-through bez keširanja da bi se uvek vukla najnovija verzija
+                        e.respondWith(fetch(e.request).catch(() => new Response("Nema interneta.")));
+                    });
+                `;
+                const swBlob = new Blob([swCode], {type: 'application/javascript'});
+                const swURL = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swURL).catch(err => console.log('SW neuspešan:', err));
+            }
         })();
 
-        // Globalne Promenljive
+        // Globalne Promenljive za PWA i Grafikon
         let radarChartInstance = null;
+        let deferredPrompt = null;
+
+        // Hvatanje PWA događaja za instalaciju
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Prikazujemo dugme za instalaciju u zaglavlju
+            const installBtn = document.getElementById('btnInstalirajHeader');
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+            }
+        });
+
+        // Funkcija za pokretanje sistemske instalacije
+        function pokreniPWAInstalaciju() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    prikaziObavestenje("Hvala na instalaciji! Aplikacija je dodata.", "green");
+                    const installBtn = document.getElementById('btnInstalirajHeader');
+                    if (installBtn) installBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            });
+        }
 
         // Učitavanje na startu
         window.onload = function() {
@@ -353,17 +419,17 @@
             tekst.innerText = poruka;
 
             if (tip === "red") {
-                ikona.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 text-base"></i>';
+                ikona.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>';
             } else if (tip === "green") {
-                ikona.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-base"></i>';
+                ikona.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-lg"></i>';
             } else {
-                ikona.innerHTML = '<i class="fa-solid fa-basketball text-brand-orange text-base animate-spin"></i>';
+                ikona.innerHTML = '<i class="fa-solid fa-basketball text-brand-orange text-lg animate-spin"></i>';
             }
 
             toast.classList.remove('translate-y-10', 'opacity-0');
             setTimeout(() => {
                 toast.classList.add('translate-y-10', 'opacity-0');
-            }, 4000);
+            }, 6000);
         }
 
         // Modali
@@ -400,36 +466,30 @@
         // Kopiranje Izveštaja
         function kopirajIzvestaj() {
             const analitikaText = document.getElementById('konacnaAnaliza').innerText;
-            
-            // Bezbedna metoda za kopiranje unutar iFrame okruženja
             const tempTextArea = document.createElement("textarea");
             tempTextArea.value = analitikaText;
             document.body.appendChild(tempTextArea);
             tempTextArea.select();
-            
             try {
                 document.execCommand('copy');
                 prikaziObavestenje("Analiza kopirana u privremenu memoriju!", "green");
             } catch (err) {
                 prikaziObavestenje("Došlo je do greške prilikom kopiranja.", "red");
             }
-            
             document.body.removeChild(tempTextArea);
         }
 
         // Učitavanje Primera Meča
         function ucitajPrimerMeca() {
-            document.getElementById('kvota1').value = "1.85";
-            document.getElementById('kvota2').value = "1.95";
+            document.getElementById('kvota1').value = "1.80";
+            document.getElementById('kvota2').value = "1.90";
             
-            document.getElementById('rawText').value = `Partizan - Crvena zvezda
-05.06.2026. - 20:30
-KLS Superliga - Finale Playoffa
+            document.getElementById('rawText').value = `Barcelona - Murcia
+02.06.2026. - 19:00
+ACB Liga Endesa - Polufinale Playoffa
 
-Partizan se u poslednje vreme muči sa odbranom reketa i u proseku dopušta čak 84.6 poena po meču u poslednjih pet utakmica. Tim trenera Obradovića u proseku beleži 52% šuta za dva poena i beleži samo 31.4 skokova po meču, a loš ulazak u drugu četvrtinu gde gube prednost im je glavna boljka ove sezone.
-
-Crvena zvezda igra odličnu odbranu na perimetru i nalazi se u nizu od pet uzastopnih pobeda u svim takmičenjima. Ekipa ima strašnu skok igru (prosečno 38.2 skoka po utakmici) i rešava prva poluvremena u svoju korist u čak 64% slučajeva. Brze tranzicije i bolja uigranost u odbrani daju im ogroman vetar u leđa u ovom meču.
-Međusobni dueli (H2H): Crvena zvezda je dobila 3 od poslednja 4 derbija odigrana u 2026. godini.`;
+Barcelona u proseku postiže 85.4 poena po meču, igrajući izuzetno brzu tranzicionu košarku kod kuće gde dobijaju čak 74% mečeva. Međutim, odbrana reketa im slabi u drugom poluvremenu gde dozvoljavaju prosečno 42.1 poena.
+Murcia se oslanja na agresivnu odbranu i skok igru (prosečno 39.4 skokova po meču). U nizu su od 4 pobede, a u 68% slučajeva pokrivaju hendikep od +5.5 poena na gostovanjima u playoffu. H2H u poslednje vreme je 3-2 za Barcelonu, ali svi mečevi su bili na 1-2 poseda razlike.`;
 
             prikaziObavestenje("Primer meča uspešno učitan!", "green");
         }
@@ -462,7 +522,26 @@ Međusobni dueli (H2H): Crvena zvezda je dobila 3 od poslednja 4 derbija odigran
             }
         }
 
-        // Pokretanje AI Analize
+        // Robustan ekstraktor JSON-a iz Gemini odgovora
+        function extractJSON(text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                const start = text.indexOf('{');
+                const end = text.lastIndexOf('}');
+                if (start !== -1 && end !== -1) {
+                    const clean = text.substring(start, end + 1);
+                    try {
+                        return JSON.parse(clean);
+                    } catch (err) {
+                        throw new Error("Sistemska greška: AI format nije prepoznat.");
+                    }
+                }
+                throw e;
+            }
+        }
+
+        // Pokretanje AI Analize sa stabilnim fallback sistemom modela
         async function pokreniAnalizu() {
             const rawText = document.getElementById('rawText').value.trim();
             const kvota1Val = parseFloat(document.getElementById('kvota1').value);
@@ -473,44 +552,40 @@ Međusobni dueli (H2H): Crvena zvezda je dobila 3 od poslednja 4 derbija odigran
                 return;
             }
             if (!rawText) {
-                prikaziObavestenje("Unesi podatke sa leve strane kako bi AI imao šta da analizira.", "red");
+                prikaziObavestenje("Unesi ili kopiraj podatke o meču.", "red");
                 return;
             }
 
-            // Provera ključa
             const apiKey = localStorage.getItem('gemini_api_key') || "";
             if (!apiKey) {
                 otvoriPostavke();
-                prikaziObavestenje("Unesi svoj besplatni Gemini API ključ da pokreneš analizu!", "red");
+                prikaziObavestenje("Unesi svoj besplatni Gemini API ključ u Podešavanja da pokreneš analizu!", "red");
                 return;
             }
 
-            // Priprema UI stanja
             document.getElementById('praznoStanje').classList.add('hidden');
             document.getElementById('rezultatiKontejner').classList.add('hidden');
             document.getElementById('loaderAnalize').classList.remove('hidden');
+            document.getElementById('loaderStatus').innerText = "AI analizira košarkašku statistiku i računa verovatnoće...";
 
-            document.getElementById('loaderStatus').innerText = "AI čita i raspoređuje košarkašku statistiku...";
-
-            // Izgradnja Prompt-a
             const systemPrompt = `Ti si profesionalni košarkaški analitičar i ekspert za sportsko klađenje.
-Zadatak ti je da na osnovu unetog sirovog teksta i unetih kvota kladionice izvučeš precizne statističke parametre i generišeš analizu tačno u traženom formatu i stilu pisanja.
+Zadatak ti je da na osnovu unetog sirovog teksta i unetih kvota izvučeš precizne statističke parametre i generišeš analizu tačno u traženom formatu i stilu pisanja.
 
-OBAVEZAN FORMAT TEKSTA (moraš da vratiš tačno ovakvu strukturu u polju "analiza_tekst", koristi procente i parametre prilagođene unetom tekstu):
+OBAVEZAN FORMAT TEKSTA (vrati tačno ovakvu strukturu u polju "analiza_tekst"):
 [Ime Domacina] - [Ime Gosta]
 [Datum] - [Vreme]
 [Naziv Lige/Takmičenja]
 
-[Ime Domacina] [tekst o formi, konstantnosti, statistici, poenima, procentima šuta, skokovima i slabim/jakim stranama tima na srpskom jeziku (ekavicom) u narativnom i stručnom stilu].
+[Ime Domacina] [analitički tekst o formi, poenima, procentima šuta, slabim i jakim stranama tima na srpskom jeziku (ekavicom) u stručnom i tečnom sportskom stilu].
 
-[Ime Gosta] [tekst o formi, prednostima, odbrani, napadu, procentima šuta i najvažnijim segmentima igre na srpskom jeziku (ekavicom)].
+[Ime Gosta] [analitički tekst o formi, odbrani, napadu, i najvažnijim segmentima igre na srpskom jeziku (ekavicom)].
 [Međusobni dueli / H2H informacija].
 
 S obzirom na to da [detaljna logička sinteza zašto je predložena opklada najbolja i najisplativija na osnovu svih parametara].
 ✅ Predlog: [Naziv predloga sa hendikepom, granicom poena ili konačnim ishodom]
-💰 Kvota: [Kvota predloga, obavezno realna i bliska unetim kvotama]
+💰 Kvota: [Kvota predloga, realna i u skladu sa unetim kvotama]
 
-Takođe, izračunaj verovatnoće pobede u procentima (pobeda_domacin i pobeda_gost), kao i ocene od 1 do 10 za sledeće košarkaške atribute oba tima:
+Takođe, izračunaj verovatnoće pobede u procentima (pobeda_domacin i pobeda_gost), kao i ocene od 1 do 10 za košarkaške atribute oba tima:
 1. Napad (napad_domacin, napad_gost)
 2. Odbrana (odbrana_domacin, odbrana_gost)
 3. Šut iz igre (sut_domacin, sut_gost)
@@ -521,8 +596,8 @@ Vrati isključivo validan JSON objekat sa sledećim poljima:
 {
   "domacin_ime": "Ime domaćeg tima",
   "gost_ime": "Ime gostujućeg tima",
-  "pobeda_domacin": 55.5, // procenat šanse za pobedu domaćina
-  "pobeda_gost": 44.5, // procenat šanse za pobedu gosta
+  "pobeda_domacin": 55.5,
+  "pobeda_gost": 44.5,
   "napad_domacin": 8.5, "napad_gost": 7.2,
   "odbrana_domacin": 6.8, "odbrana_gost": 8.0,
   "sut_domacin": 7.5, "sut_gost": 8.2,
@@ -538,16 +613,21 @@ Kvote iz kladionice:
 Kvota na Domacina: ${kvota1Val}
 Kvota na Gosta: ${kvota2Val}`;
 
-            // Slanje zahteva sa eksponencijalnim backoff-om
-            let uspeh = false;
-            let pokusaj = 0;
-            let delay = 1000;
-            let resultText = "";
+            // Fallback lista modela: Prvo stabilni 1.5-flash (najkompatibilniji), pa novi 2.5-flash
+            const modeli = [
+                "gemini-1.5-flash",
+                "gemini-2.5-flash"
+            ];
 
-            while (!uspeh && pokusaj < 5) {
+            let uspeh = false;
+            let resultText = "";
+            let zadnjaGreska = "";
+
+            for (const model of modeli) {
+                if (uspeh) break;
                 try {
-                    pokusaj++;
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    document.getElementById('loaderStatus').innerText = `Uspostavljam vezu sa modelom: ${model}...`;
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -562,27 +642,30 @@ Kvota na Gosta: ${kvota2Val}`;
                     if (response.ok) {
                         const data = await response.json();
                         resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                        uspeh = true;
+                        if (resultText) {
+                            uspeh = true;
+                            break;
+                        }
                     } else {
-                        throw new Error("API Neuspešan");
+                        const errObj = await response.json().catch(() => ({}));
+                        zadnjaGreska = errObj.error?.message || `API Status ${response.status}`;
                     }
                 } catch (err) {
-                    if (pokusaj >= 5) {
-                        document.getElementById('loaderAnalize').classList.add('hidden');
-                        document.getElementById('praznoStanje').classList.remove('hidden');
-                        prikaziObavestenje("Greška pri povezivanju sa AI modelom. Proveri svoj API ključ.", "red");
-                        return;
-                    }
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
+                    zadnjaGreska = err.message;
                 }
+            }
+
+            if (!uspeh) {
+                document.getElementById('loaderAnalize').classList.add('hidden');
+                document.getElementById('praznoStanje').classList.remove('hidden');
+                prikaziObavestenje(`Greška: ${zadnjaGreska}. Proveri API ključ i internet vezu.`, "red");
+                return;
             }
 
             // Obrada dobijenog odgovora
             try {
-                const analiziranPodatak = JSON.parse(resultText);
+                const analiziranPodatak = extractJSON(resultText);
 
-                // Ažuriranje imena i šansi u interfejsu
                 document.getElementById('domacinIme').innerText = analiziranPodatak.domacin_ime || "Domaćin";
                 document.getElementById('gostIme').innerText = analiziranPodatak.gost_ime || "Gost";
 
@@ -643,15 +726,14 @@ Kvota na Gosta: ${kvota2Val}`;
                     ]
                 );
 
-                // Promena prikaza
                 document.getElementById('loaderAnalize').classList.add('hidden');
                 document.getElementById('rezultatiKontejner').classList.remove('hidden');
-                prikaziObavestenje("Košarkaška analiza je spremna!", "green");
+                prikaziObavestenje("Košarkaška analiza je uspešno generisana!", "green");
 
             } catch (err) {
                 document.getElementById('loaderAnalize').classList.add('hidden');
                 document.getElementById('praznoStanje').classList.remove('hidden');
-                prikaziObavestenje("Greška prilikom raščlanjivanja AI podataka.", "red");
+                prikaziObavestenje("Greška pri tumačenju AI rezultata. Pokušajte ponovo.", "red");
             }
         }
 
